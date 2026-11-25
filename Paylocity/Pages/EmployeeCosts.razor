@@ -1,0 +1,137 @@
+﻿@page "/employeecosts"
+@inject IModalService Modal
+
+
+<h1>Employee Costs</h1>
+<div class="flex-row">
+    <div class="flex-column">
+        <RadzenButton Text="Add Employee" Click="@(() => NewEmployeePopup())" />
+    </div>
+    <div class="flex-column">
+        <RadzenButton Text="Add Dependent" Click="@(() => NewDependentPopup())" />
+    </div>
+</div>
+<div class="formRow">
+    <RadzenDataGrid style="height: 100vh; margin-bottom: 50px;" AllowGrouping="true" Data="@employeeCosts" TItem="EmployeeCostsVM" Render="@OnRender">
+        <GroupHeaderTemplate>
+            @context.GroupDescriptor.GetTitle(): @(context.Data.Key ?? "")
+        </GroupHeaderTemplate>
+        <Columns>
+            @*<RadzenDataGridColumn TItem="EmployeeCostsVM" Property="EmployeeID" />*@
+            <RadzenDataGridColumn TItem="EmployeeCostsVM" Property="FirstName" Title="First Name">
+                <GroupFooterTemplate>
+                    <b>@String.Format(new System.Globalization.CultureInfo("en-US"), "{0:0}", "Employee Total")</b>
+                </GroupFooterTemplate>
+                <FooterTemplate>
+                    <b>@String.Format(new System.Globalization.CultureInfo("en-US"), "{0:0}", "Grand Total")</b>
+                </FooterTemplate>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="EmployeeCostsVM" Property="LastName" Title="Last Name"></RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="EmployeeCostsVM" Property="IsDependent" Title="Is Dependent"></RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="EmployeeCostsVM" Property="Pay" Title="Pay">
+                <GroupFooterTemplate>
+                    <b>@String.Format(new System.Globalization.CultureInfo("en-US"), "{0:C}", context.Data.Items.Cast<EmployeeCostsVM>().Sum(o => o.Pay))</b>
+                </GroupFooterTemplate>
+                <FooterTemplate>
+                    <b>@String.Format(new System.Globalization.CultureInfo("en-US"), "{0:C}", employeeCosts.Sum(o => o.Pay))</b>
+                </FooterTemplate>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="EmployeeCostsVM" Property="BenefitsCost" Title="Benefits Cost">
+                <GroupFooterTemplate>
+                    <b>@String.Format(new System.Globalization.CultureInfo("en-US"), "{0:C}", context.Data.Items.Cast<EmployeeCostsVM>().Sum(o => o.BenefitsCost))</b>
+                </GroupFooterTemplate>
+                <FooterTemplate>
+                    <b>@String.Format(new System.Globalization.CultureInfo("en-US"), "{0:C}", employeeCosts.Sum(o => o.BenefitsCost))</b>
+                </FooterTemplate>
+            </RadzenDataGridColumn>
+            <RadzenDataGridColumn TItem="EmployeeCostsVM" Property="Total" Title="Total">
+                <GroupFooterTemplate>
+                    <b>@String.Format(new System.Globalization.CultureInfo("en-US"), "{0:C}", context.Data.Items.Cast<EmployeeCostsVM>().Sum(o => o.Total))</b>
+                </GroupFooterTemplate>
+                <FooterTemplate>
+                    <b>@String.Format(new System.Globalization.CultureInfo("en-US"), "{0:C}", employeeCosts.Sum(o => o.Total))</b>
+                </FooterTemplate>
+            </RadzenDataGridColumn>
+        </Columns>
+    </RadzenDataGrid>
+</div>
+
+
+    @code {
+        [Inject] public IPaylocityService paylocityService { get; set; }
+        List<EmployeeCostsVM> employeeCosts = new List<EmployeeCostsVM>();
+        RadzenDataGrid<EmployeeCostsVM> grid;
+        bool? groupsExpanded;
+
+        protected override async void OnAfterRender(bool firstRender)
+        {
+            if (firstRender)
+            {
+                //employeeCosts = await paylocityService.GetAllCosts();
+                employeeCosts = await paylocityService.GetAllCosts();
+                this.StateHasChanged();
+            }
+            base.OnAfterRender(firstRender);
+        }
+
+        void OnRender(DataGridRenderEventArgs<EmployeeCostsVM> args)
+        {
+            if (args.FirstRender)
+            {
+                args.Grid.Groups.Add(new GroupDescriptor() { Title = "Employee ID", Property = "EmployeeID" });
+                StateHasChanged();
+            }
+        }
+
+        async Task NewEmployeePopup()
+        {
+            try
+            {
+                var options = new ModalOptions()
+                {
+                    Class = "blazored-modal"
+                };
+                var formModal = Modal.Show<NewEmployee>("New Employee", options);
+                var result = await formModal.Result;
+                if (!result.Cancelled && formModal.Result.IsCompletedSuccessfully)
+                {
+                    //employeeCosts = ((List<EmployeeCostsVM>)result.Data);
+                    employeeCosts = await paylocityService.GetAllCosts();
+                }
+
+                this.StateHasChanged();
+            }
+            catch (Exception ex)
+            {
+                string error = ex.ToString();
+            }
+        }
+
+        async Task NewDependentPopup()
+        {
+            try
+            {
+                var parameters = new ModalParameters();
+                //parameters.Add("employeeid", employeeid);
+
+                var options = new ModalOptions()
+                {
+                    Class = "blazored-modal"
+                };
+                var formModal = Modal.Show<NewDependent>("New Dependent", parameters, options);
+                var result = await formModal.Result;
+                if (!result.Cancelled && formModal.Result.IsCompletedSuccessfully)
+                {
+                    //employeeCosts = ((List<EmployeeCostsVM>)result.Data);
+                    employeeCosts = await paylocityService.GetAllCosts();
+                }
+
+                this.StateHasChanged();
+            }
+            catch (Exception ex)
+            {
+                string error = ex.ToString();
+            }
+        }
+
+    }

@@ -1,0 +1,80 @@
+﻿@using System.ComponentModel.DataAnnotations;
+
+
+<section class="content inherit-minheight">
+    <div class="container-fluid inherit-minheight">
+        <div class=" inherit-minheight">
+
+            <div class="card card-primary">
+                <div class="card-header">
+                    <h3 class="card-title">New Dependent</h3>
+                </div>
+                <!-- /.card-header -->
+                <div class="card-body">
+                    <EditForm Model="dependentData">
+                        <DataAnnotationsValidator />
+                        <ValidationSummary />
+                        <div class="formRow">
+                            <label class="formLabel" for="ddlEmployee">Employee Relationship</label>
+                            <RadzenDropDown class="formInput" id="ddlEmployee" AllowClear="false" TValue="Int32" @bind-Value="dependentData.EmployeeID"
+                                            Data=@(employeeList.Distinct())
+                                            TextProperty="FullName" ValueProperty="EmployeeID" />
+                        </div>
+                        <div class="formRow">
+                            <label class="formLabel" for="txtFirstName">First Name</label>
+                            <RadzenTextBox class="formInput" id="txtFirstName" @bind-Value="dependentData.FirstName"></RadzenTextBox>
+                        </div>
+                        <div class="formRow">
+                            <label class="formLabel" for="txtLastName">Last Name</label>
+                            <RadzenTextBox class="formInput" id="txtLastName" @bind-Value="dependentData.LastName"></RadzenTextBox>
+                        </div>
+                    </EditForm>
+                </div>
+                <div class="card-footer">
+                </div>
+            </div>
+            <div class="formRow" style="margin-top: 20px">
+                <RadzenButton Click="Submit_Clicked">Save</RadzenButton>
+                <RadzenButton Click="Cancel_Clicked">Cancel</RadzenButton>
+            </div>
+        </div>
+        <!-- row class end -->
+    </div><!-- /.container-fluid -->
+</section>
+
+@code {
+    [CascadingParameter] BlazoredModalInstance ModalInstance { get; set; }
+    public Dependent dependentData = new Dependent();
+    private List<EmployeeVM> employeeList = new List<EmployeeVM>();
+    [Inject] public IPaylocityService paylocityService { get; set; }
+
+    protected override async void OnAfterRender(bool firstRender)
+    {
+        if (firstRender)
+        {
+            employeeList = await paylocityService.GetEmployees();
+            this.StateHasChanged();
+        }
+        base.OnAfterRender(firstRender);
+    }
+
+    protected async void Submit_Clicked()
+    {
+        try
+        {
+            dependentData.Active = true;
+            await paylocityService.UpsertDependent(dependentData);
+            await ModalInstance.CloseAsync();
+            this.StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            string error = ex.ToString();
+        }
+    }
+
+    protected async void Cancel_Clicked()
+    {
+        await ModalInstance.CloseAsync(ModalResult.Cancel());
+    }
+}

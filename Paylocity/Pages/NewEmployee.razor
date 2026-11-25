@@ -1,0 +1,63 @@
+﻿@using System.ComponentModel.DataAnnotations;
+
+
+<section class="content inherit-minheight">
+    <div class="container-fluid inherit-minheight">
+        <div class=" inherit-minheight">
+            <div class="card card-primary">
+                <div class="card-header">
+                    <h3 class="card-title">New Employee</h3>
+                </div>
+                <!-- /.card-header -->
+                <div class="card-body">
+                    <EditForm Model="employeeData">
+                        <DataAnnotationsValidator />
+                        <ValidationSummary />
+                        <div class="formRow">
+                            <label class="formLabel" for="txtFirstName">First Name</label>
+                            <RadzenTextBox class="formInput" id="txtFirstName" @bind-Value="employeeData.FirstName"></RadzenTextBox>
+                        </div>
+                        <div class="formRow">
+                            <label class="formLabel" for="txtLastName">Last Name</label>
+                            <RadzenTextBox class="formInput" id="txtLastName" @bind-Value="employeeData.LastName"></RadzenTextBox>
+                        </div>
+                    </EditForm>
+                </div>
+                <div class="card-footer">
+                </div>
+            </div>
+            <div class="formRow" style="margin-top: 20px">
+                <RadzenButton Click="Submit_Clicked">Save</RadzenButton>
+                <RadzenButton Click="Cancel_Clicked">Cancel</RadzenButton>
+            </div>
+        </div>
+        <!-- row class end -->
+    </div><!-- /.container-fluid -->
+</section>
+
+@code {
+    [CascadingParameter] BlazoredModalInstance ModalInstance { get; set; }
+    [Inject] public IPaylocityService paylocityService { get; set; }
+    public Employee employeeData = new Employee();
+
+
+    protected async void Submit_Clicked()
+    {
+        try
+        {
+            employeeData.Active = true;
+            await paylocityService.UpsertEmployee(employeeData);
+            await ModalInstance.CloseAsync();
+            this.StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            string error = ex.ToString();
+        }
+    }
+
+    protected async void Cancel_Clicked()
+    {
+        await ModalInstance.CloseAsync(ModalResult.Cancel());
+    }
+}

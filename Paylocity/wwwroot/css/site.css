@@ -1,0 +1,117 @@
+@import url('open-iconic/font/css/open-iconic-bootstrap.min.css');
+
+html, body {
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+}
+
+a, .btn-link {
+    color: #0366d6;
+}
+
+.btn-primary {
+    color: #fff;
+    background-color: #1b6ec2;
+    border-color: #1861ac;
+}
+
+.content {
+    padding-top: 1.1rem;
+}
+
+.valid.modified:not([type=checkbox]) {
+    outline: 1px solid #26b050;
+}
+
+.invalid {
+    outline: 1px solid red;
+}
+
+.validation-message {
+    color: red;
+}
+
+#blazor-error-ui {
+    background: lightyellow;
+    bottom: 0;
+    box-shadow: 0 -1px 2px rgba(0, 0, 0, 0.2);
+    display: none;
+    left: 0;
+    padding: 0.6rem 1.25rem 0.7rem 1.25rem;
+    position: fixed;
+    width: 100%;
+    z-index: 1000;
+}
+
+    #blazor-error-ui .dismiss {
+        cursor: pointer;
+        position: absolute;
+        right: 0.75rem;
+        top: 0.5rem;
+    }
+
+    .row {
+        margin-bottom: 20px;
+    }
+
+.blazored-modal {
+    display: flex;
+    flex-direction: column;
+    background-color: #fff;
+    border-radius: 4px;
+    border: 1px solid #fff;
+    padding: 1.5rem;
+    box-shadow: 0 2px 2px rgba(0, 0, 0, 0.25);
+    min-width: 50vw;
+    max-height: 90vh;
+    width: 50vw;
+    z-index: 1042;
+}
+.blazored-modal-overlay {
+    z-index: 1041;
+}
+
+.blazored-modal-container {
+    z-index: 1040;
+}
+
+.blazored-modal-header {
+    padding-bottom: 1em;
+}
+
+.blazored-modal-content {
+    overflow-y: auto;
+}
+.inherit-minheight, .blazored-modal-content, .blazored-modal-content form {
+    min-height: inherit;
+}
+.blazored-modal-document .blazored-modal-content {
+    overflow-y: hidden;
+}
+.flex-row {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    width: 100%;
+}
+
+.flex-column {
+    display: flex;
+    flex-direction: column;
+    flex-basis: 100%;
+    flex: 1;
+    padding: 2px;
+}
+.flex-column label {
+    text-align: right;
+}
+.formRow {
+    width: 100%;
+    line-height: 32px;
+    margin-bottom: 10px;
+}
+.formLabel, .formInput {
+    width: 100%;
+}
+.sidebar {
+    background-image: linear-gradient(180deg, rgb(237, 33, 36) 0%, #fe8f1c 70%)!important;
+}

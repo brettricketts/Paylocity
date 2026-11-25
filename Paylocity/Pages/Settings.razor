@@ -1,0 +1,171 @@
+﻿@page "/settings"
+@inject NavigationManager navigationManager
+
+
+<h1>Settings</h1>
+
+<section class="content inherit-minheight">
+    <div class="container-fluid inherit-minheight">
+        <div class=" inherit-minheight">
+            <div class="card card-primary">
+                <div class="card-header">
+                    <h3 class="card-title">Settings</h3>
+                </div>
+                <div class="card-body">
+                    <EditForm Model="settingsData">
+                        <DataAnnotationsValidator />
+                        <ValidationSummary />
+                        <div class="formRow">
+                            <label class="formLabel" for="txtPaycheckAmount">Paycheck Amount</label>
+                            <RadzenNumeric TValue="decimal" class="formInput" id="txtPaycheckAmount" @bind-Value="settingsData.PaycheckAmount"></RadzenNumeric>
+                        </div>
+                        <div class="formRow">
+                            <label class="formLabel" for="txtPaycheckCount">Paycheck Count</label>
+                            <RadzenNumeric TValue="decimal" class="formInput" id="txtPaycheckCount" @bind-Value="settingsData.PaycheckCount"></RadzenNumeric>
+                        </div>
+                        <div class="formRow">
+                            <label class="formLabel" for="txtEmployeeBenefits">Employee Benefits</label>
+                            <RadzenNumeric TValue="decimal" class="formInput" id="txtEmployeeBenefits" @bind-Value="settingsData.EmployeeBenefits"></RadzenNumeric>
+                        </div>
+                        <div class="formRow">
+                            <label class="formLabel" for="txtDependentBenefits">Dependent Benefits</label>
+                            <RadzenNumeric TValue="decimal" class="formInput" id="txtDependentBenefits" @bind-Value="settingsData.DependentBenefits"></RadzenNumeric>
+                        </div>
+                        <div class="formRow">
+                            <label class="formLabel" for="txtDiscountPercent">Discount Percent</label>
+                            <RadzenNumeric TValue="decimal" class="formInput" id="txtDiscountPercent" @bind-Value="settingsData.DiscountPercent"></RadzenNumeric>
+                        </div>
+                    </EditForm>
+                </div>
+                <div class="card-footer">
+                </div>
+            </div>
+            <div class="formRow" style="margin-top: 20px">
+                <RadzenButton Click="Submit_Clicked" Text="Save"></RadzenButton>
+                <RadzenButton Click="Cancel_Clicked" Text="Cancel"></RadzenButton>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+@code {
+    public List<CalculationParameter> calcparams = new List<CalculationParameter>();
+    public SettingsVM settingsData = new SettingsVM();
+    [Inject] public IPaylocityService paylocityService { get; set; }
+    [CascadingParameter] BlazoredModalInstance ModalInstance { get; set; }
+
+    protected override async void OnAfterRender(bool firstRender)
+    {
+        try
+        {
+            // execute conditionally for loading data, otherwise this will load
+            // every time the page refreshes
+            if (firstRender)
+            {
+
+                calcparams = await paylocityService.GetAllCalculationParameters();
+                settingsData.DependentBenefits = TryGetConfigSetting(calcparams, "DependentBenefits");
+                settingsData.DiscountPercent = TryGetConfigSetting(calcparams, "DiscountPercent");
+                settingsData.EmployeeBenefits = TryGetConfigSetting(calcparams, "EmployeeBenefits");
+                settingsData.PaycheckAmount = TryGetConfigSetting(calcparams, "PaycheckAmount");
+                settingsData.PaycheckCount = TryGetConfigSetting(calcparams, "PaycheckCount");
+
+                this.StateHasChanged();
+            }
+        }
+        catch (Exception ex)
+        {
+            string error = ex.ToString();
+        }
+    }
+
+    private decimal TryGetConfigSetting(List<CalculationParameter> paramlist, string paramName)
+    {
+        decimal result = 0;
+        try
+        {
+            result = paramlist.Where(p => p.Parameter == paramName).FirstOrDefault().Value;
+        }
+        catch (Exception ex)
+        {
+            string error = ex.Message;
+        }
+        return result;
+    }
+
+    protected async void Submit_Clicked()
+    {
+        try
+        {
+            SaveSettings();
+            navigationManager.NavigateTo("employeecosts");
+
+            this.StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            string error = ex.ToString();
+        }
+    }
+
+    protected async void Cancel_Clicked()
+    {
+        navigationManager.NavigateTo("employeecosts");
+
+        this.StateHasChanged();
+    }
+
+
+    protected async void SaveSettings()
+    {
+        try
+        {
+            List<CalculationParameter> updatedData = new List<CalculationParameter>();
+
+            CalculationParameter item = calcparams.Where(p => p.Parameter == "DependentBenefits").FirstOrDefault();
+            if (settingsData.DependentBenefits != item.Value)
+            {
+                item.Value = settingsData.DependentBenefits;
+                updatedData.Add(item);
+            }
+            item = calcparams.Where(p => p.Parameter == "DiscountPercent").FirstOrDefault();
+            if (settingsData.DiscountPercent != item.Value)
+            {
+                item.Value = settingsData.DiscountPercent;
+                updatedData.Add(item);
+            }
+            item = calcparams.Where(p => p.Parameter == "EmployeeBenefits").FirstOrDefault();
+            if (settingsData.EmployeeBenefits != item.Value)
+            {
+                item.Value = settingsData.EmployeeBenefits;
+                updatedData.Add(item);
+            }
+            item = calcparams.Where(p => p.Parameter == "PaycheckAmount").FirstOrDefault();
+            if (settingsData.PaycheckAmount != item.Value)
+            {
+                item.Value = settingsData.PaycheckAmount;
+                updatedData.Add(item);
+            }
+            item = calcparams.Where(p => p.Parameter == "PaycheckCount").FirstOrDefault();
+            if (settingsData.PaycheckCount != item.Value)
+            {
+                item.Value = settingsData.PaycheckCount;
+                updatedData.Add(item);
+            }
+
+            if (updatedData != null && updatedData.Count > 0)
+            {
+                var cList = await paylocityService.UpsertCalculationParameters(updatedData);
+
+                this.StateHasChanged();
+            }
+
+        }
+        catch (Exception ex)
+        {
+            string error = ex.ToString();
+        }
+    }
+
+}
